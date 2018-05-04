@@ -1,0 +1,138 @@
+'use strict';
+
+const Hapi = require('hapi');
+const Hoek = require('hoek');
+const parseCurl = require('parse-curl');
+var request = require('request');
+
+const server = Hapi.server({
+  port: 6660,
+  host: '0.0.0.0'
+});
+
+const init = async () => {
+  await server.register(require('vision'));
+  await server.register(require('inert'));
+
+  let fetchData = {
+    header: {
+      'X-Supported-Image-Formats': 'webp,jpeg',
+      Origin: 'https://tinder.com',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Accept-Language': 'en-US,en;q=0.9,pt;q=0.8',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36',
+      Accept: 'application/json',
+      Referer: 'https://tinder.com/',
+      Connection: 'keep-alive',
+      Platform: 'web',
+      'App-Version': '1002220'
+    }
+  };
+
+  server.views({
+    engines: {
+      html: require('handlebars')
+    },
+    relativeTo: __dirname,
+    path: './templates',
+    layout: true,
+    layoutPath: './templates/layout'
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/assets/{param*}',
+    handler: {
+      directory: {
+        path: 'assets'
+      }
+    }
+  });
+
+  server.route({
+    method: 'POST',
+    path: '/prepare',
+    handler: (request, h) => {
+      let parsed = parseCurl(request.payload.curl);
+      fetchData = {
+        header: {
+          ...fetchData.header,
+          'X-Auth-Token': parsed.header['X-Auth-Token']
+        }
+      };
+      return fetchData;
+    }
+  });
+
+  server.route({
+    method: 'POST',
+    path: '/execute',
+    handler: (request, h) => {
+      fetch().then(console.log, console.error);
+    }
+  });
+
+  const fetchUsers = () => {
+    let data = [];
+    const max = 3;
+    let iterator = 0;
+    function callback(error, response, body) {
+      iterator++;
+      if (!error && response.statusCode == 200) {
+        data = data.concat(JSON.parse(body).data.results);
+      } else {
+        console.log([response, body]);
+      }
+      return iterator >= max;
+    }
+
+    return new Promise(resolve => {
+      for (let i = 0; i <= max; i++) {
+        let a = request(
+          {
+            headers: {
+              ...fetchData.header,
+              'Accept-Encoding': 'gzip, deflate, br'
+            },
+            uri: 'https://api.gotinder.com/v2/recs/core?locale=pt-BR',
+            method: 'GET',
+            gzip: true
+          },
+          (error, response, body) => {
+            callback(error, response, body) && resolve(data);
+          }
+        );
+      }
+    });
+  };
+
+  server.route({
+    method: 'GET',
+    path: '/loadusers',
+    handler: async (request, h) => {
+      const data = await fetchUsers();
+      return data.filter((obj, pos, arr) => {
+        return arr.map(mapObj => mapObj.user._id).indexOf(obj.user._id) === pos;
+      });
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: (request, h) => {
+      return h.view('index');
+    }
+  });
+
+  await server.start();
+  console.log(`Server running at: ${server.info.uri}`);
+};
+
+process.on('unhandledRejection', err => {
+  console.log(err);
+  process.exit(1);
+});
+
+init();
