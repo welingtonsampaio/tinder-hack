@@ -18,3 +18,13 @@ $ yarn start
 ```
 
 Open in your browser [http://localhost:6660/](http://localhost:6660/)
+
+## Navigation
+
+Use keyboards to fast navigations:
+
+- `UP` - show previous user details
+- `DOWN` - show next user details
+- `LEFT` - pass user, dislike on tinder
+- `RIGHT` - like user, like on tinder
+- `R` - reload list of users

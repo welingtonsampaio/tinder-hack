@@ -5,6 +5,7 @@
 
   function constructor() {
     setEvents();
+    setShortcuts();
   }
 
   function get(url, fn) {
@@ -37,19 +38,111 @@
       });
     });
 
+    $(document).on('click', '#userReload', () => {
+      $('#details')
+        .html('')
+        .data('entry', null);
+      loading('show');
+      loadUsers();
+    });
+
     $(document).on('click', '#list li', e => {
       var idx = $(e.currentTarget).data('index');
       showDetails(users[idx]);
     });
 
     $(document).on('click', '#details .wrapper-buttons .button__text-like', e => {
-      var entry = $('#details').data('entry');
-      console.log(['like', entry]);
+      currentLike();
     });
 
     $(document).on('click', '#details .wrapper-buttons .button__text-dislike', e => {
+      currentPass();
+    });
+  }
+
+  function currentPass() {
+    var entry = $('#details').data('entry');
+    // console.log(['dislike', entry]);
+    post('/execute', { type: 'pass', id: entry.user._id, s_number: entry.s_number }, function(res) {
+      if (res.resp.status == 200) {
+        var idx = users.indexOf(entry);
+        if (idx >= 0) {
+          users.splice(idx, 1);
+          mountList();
+          if (users.length == 0) {
+            loading('show');
+            loadUsers();
+          } else {
+            if (idx >= users.length) idx--;
+            showDetails(users[idx]);
+          }
+        }
+      }
+      // loadUsers();
+      // loading('hide');
+    });
+  }
+
+  function currentLike() {
+    var entry = $('#details').data('entry');
+    // console.log(['dislike', entry]);
+    post('/execute', { type: 'like', id: entry.user._id, s_number: entry.s_number }, function(res) {
+      if (!res.resp.status) {
+        if (res.resp.match) alert('você deu match com ' + entry.user.name);
+
+        var idx = users.indexOf(entry);
+        if (idx >= 0) {
+          users.splice(idx, 1);
+          mountList();
+          if (users.length == 0) {
+            loading('show');
+            loadUsers();
+          } else {
+            if (idx >= users.length) idx--;
+            showDetails(users[idx]);
+          }
+        }
+      }
+      // loadUsers();
+      // loading('hide');
+    });
+  }
+
+  function setShortcuts() {
+    Mousetrap.bind('up', function() {
       var entry = $('#details').data('entry');
-      console.log(['dislike', entry]);
+      var idx = users.indexOf(entry);
+      if (idx != 0) {
+        idx--;
+        showDetails(users[idx]);
+      }
+    });
+    Mousetrap.bind('down', function() {
+      var entry = $('#details').data('entry');
+      var idx = users.indexOf(entry);
+      if (idx < users.length - 1) {
+        idx++;
+        showDetails(users[idx]);
+      }
+    });
+    Mousetrap.bind('left', function() {
+      var entry = $('#details').data('entry');
+      if (entry) {
+        currentPass();
+      }
+    });
+    Mousetrap.bind('right', function() {
+      var entry = $('#details').data('entry');
+      if (entry) {
+        currentLike();
+      }
+    });
+    Mousetrap.bind('r', function() {
+      $('#details')
+        .html('')
+        .data('entry', null);
+      loading('show');
+      loadUsers();
     });
   }
 
@@ -66,7 +159,8 @@
   }
 
   function mountList() {
-    var html = '<ul>';
+    var html = '<button id="userReload">recarregar usuários</button>';
+    html += '<ul>';
     users.forEach((entry, idx) => {
       html += '<li data-index="' + idx + '">';
       html += '<span>' + entry.user.name + '</span><br />';

@@ -177,6 +177,7 @@ body {
 .button__text-dislike svg {
   transform: scale(1);
 }
+.superlike { display: none !important; }
 .button__text-superlike svg {
   transform: scale(.45);
 }

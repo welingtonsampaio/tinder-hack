@@ -68,14 +68,50 @@ const init = async () => {
   server.route({
     method: 'POST',
     path: '/execute',
-    handler: (request, h) => {
-      fetch().then(console.log, console.error);
+    handler: async (req, h) => {
+      const data = await new Promise(resolve => {
+        request(
+          {
+            headers: {
+              ...fetchData.header,
+              'Accept-Encoding': 'gzip, deflate, br'
+            },
+            uri:
+              'https://api.gotinder.com/' +
+              req.payload.type +
+              '/' +
+              req.payload.id +
+              '?locale=pt-BR&s_number=' +
+              req.payload.s_number,
+            method: 'GET',
+            gzip: true
+          },
+          (error, response, body) => {
+            resolve({
+              resp: JSON.parse(body),
+              url:
+                'https://api.gotinder.com/' +
+                req.payload.type +
+                '/' +
+                req.payload.id +
+                '?locale=pt-BR&s_number=' +
+                req.payload.s_number,
+              headers: {
+                ...fetchData.header,
+                'Accept-Encoding': 'gzip, deflate, br'
+              }
+            });
+          }
+        );
+      });
+      return data;
+      // fetch().then(console.log, console.error);
     }
   });
 
   const fetchUsers = () => {
     let data = [];
-    const max = 3;
+    const max = 20;
     let iterator = 0;
     function callback(error, response, body) {
       iterator++;
