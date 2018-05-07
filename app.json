@@ -1,0 +1,14 @@
+{
+  "name": "Tinder Hack",
+  "description": "A simple tinder hack to see and like people",
+  "repository": "https://github.com/welingtonsampaio/tinder-hack",
+  "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/master/public/node.svg",
+  "keywords": [
+    "node",
+    "hapi.js",
+    "heroku",
+    "tinde",
+    "hack"
+  ],
+  "image": "heroku/nodejs"
+}
