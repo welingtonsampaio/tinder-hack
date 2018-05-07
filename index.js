@@ -5,6 +5,8 @@ const Hoek = require('hoek');
 const parseCurl = require('parse-curl');
 var request = require('request');
 
+const PORT = process.env.PORT || 6660;
+
 const server = Hapi.server({
   port: 6660,
   host: '0.0.0.0'
