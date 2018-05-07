@@ -2,6 +2,20 @@ body {
   background-color: #f0f4f7;
 }
 
+code {
+  background-color: #f3f3c7;
+  padding: 3px 6px;
+  color: #d40808;
+}
+
+div#wrapperPrepare {
+    width: 630px;
+    margin: 0 auto;
+}
+
+div#wrapperPrepare img { max-width: 500px !important; }
+div#wrapperPrepare textarea { width: 100%; }
+
 .loading {
   position: fixed;
   z-index: 9999;
