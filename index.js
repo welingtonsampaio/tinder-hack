@@ -59,11 +59,11 @@ const init = async () => {
       let parsed = parseCurl(request.payload.curl);
       fetchData = {
         header: {
-          ...fetchData.header,
-          'X-Auth-Token': parsed.header['X-Auth-Token']
+          ...fetchData.header
+          // 'X-Auth-Token': parsed.header['X-Auth-Token']
         }
       };
-      return fetchData;
+      return { token: parsed.header['X-Auth-Token'] };
     }
   });
 
@@ -76,6 +76,7 @@ const init = async () => {
           {
             headers: {
               ...fetchData.header,
+              'X-Auth-Token': req.payload.token,
               'Accept-Encoding': 'gzip, deflate, br'
             },
             uri:
@@ -111,7 +112,7 @@ const init = async () => {
     }
   });
 
-  const fetchUsers = () => {
+  const fetchUsers = token => {
     let data = [];
     const max = 20;
     let iterator = 0;
@@ -131,6 +132,7 @@ const init = async () => {
           {
             headers: {
               ...fetchData.header,
+              'X-Auth-Token': token,
               'Accept-Encoding': 'gzip, deflate, br'
             },
             uri: 'https://api.gotinder.com/v2/recs/core?locale=pt-BR',
@@ -147,9 +149,9 @@ const init = async () => {
 
   server.route({
     method: 'GET',
-    path: '/loadusers',
+    path: '/loadusers/{token}',
     handler: async (request, h) => {
-      const data = await fetchUsers();
+      const data = await fetchUsers(request.params.token);
       return data.filter((obj, pos, arr) => {
         return arr.map(mapObj => mapObj.user._id).indexOf(obj.user._id) === pos;
       });

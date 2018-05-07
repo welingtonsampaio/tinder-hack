@@ -2,6 +2,7 @@
   'use strict';
 
   var users = {};
+  var token = null;
 
   function constructor() {
     setEvents();
@@ -32,8 +33,10 @@
     $(document).on('click', '#prepare', () => {
       loading('show');
       post('/prepare', { curl: $('[name="prepare"]').val() }, function(res) {
+        token = res.token;
         $('#wrapperPrepare').hide();
         loadUsers();
+
         // loading('hide');
       });
     });
@@ -63,7 +66,7 @@
   function currentPass() {
     var entry = $('#details').data('entry');
     // console.log(['dislike', entry]);
-    post('/execute', { type: 'pass', id: entry.user._id, s_number: entry.s_number }, function(res) {
+    post('/execute', { token: token, type: 'pass', id: entry.user._id, s_number: entry.s_number }, function(res) {
       if (res.resp.status == 200) {
         var idx = users.indexOf(entry);
         if (idx >= 0) {
@@ -86,7 +89,7 @@
   function currentLike() {
     var entry = $('#details').data('entry');
     // console.log(['dislike', entry]);
-    post('/execute', { type: 'like', id: entry.user._id, s_number: entry.s_number }, function(res) {
+    post('/execute', { token: token, type: 'like', id: entry.user._id, s_number: entry.s_number }, function(res) {
       if (!res.resp.status) {
         if (res.resp.match) alert('você deu match com ' + entry.user.name);
 
@@ -151,7 +154,7 @@
   }
 
   function loadUsers() {
-    get('/loadusers', function(data) {
+    get('/loadusers/' + token, function(data) {
       users = data;
       mountList();
       loading('hide');
