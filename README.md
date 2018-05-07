@@ -1,8 +1,10 @@
 # Tinder Hack
 
+Simple Tinder web client with new resources free. Open web client here [https://tinder-hack.herokuapp.com/](https://tinder-hack.herokuapp.com/)
+
 ## To use
 
-- Open your Tinder Web with inspector openned;
+- Open your [Tinder Web](https://tinder.com/) with inspector openned `cmd + i` to Mac or `F12` to Windows;
 - Find in network tab the request `core`;
 - Generate a `cron string` of this request;
 - Past in first textarea to initialize the process;
