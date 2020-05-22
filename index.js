@@ -56,7 +56,8 @@ const init = async () => {
     method: 'POST',
     path: '/prepare',
     handler: (request, h) => {
-      let parsed = parseCurl(request.payload.curl);
+      let aaaa = request.payload.curl.replace(/\/\n|\/\r/, '');
+      let parsed = parseCurl(aaaa);
       fetchData = {
         header: {
           ...fetchData.header,
