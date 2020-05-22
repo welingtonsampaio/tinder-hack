@@ -1,6 +1,6 @@
 'use strict';
 
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 const Hoek = require('hoek');
 const parseCurl = require('parse-curl');
 var request = require('request');
@@ -14,7 +14,7 @@ const server = Hapi.server({
 
 const init = async () => {
   await server.register(require('@hapi/vision'));
-  await server.register(require('inert'));
+  await server.register(require('@hapi/inert'));
 
   let fetchData = {
     header: {
