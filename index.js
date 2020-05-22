@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 6660;
 
 const server = Hapi.server({
   port: PORT,
-  host: '0.0.0.0'
+  host: '0.0.0.0',
 });
 
 const init = async () => {
@@ -28,18 +28,18 @@ const init = async () => {
       Referer: 'https://tinder.com/',
       Connection: 'keep-alive',
       Platform: 'web',
-      'App-Version': '1002220'
-    }
+      'App-Version': '1002220',
+    },
   };
 
   server.views({
     engines: {
-      html: require('handlebars')
+      html: require('handlebars'),
     },
     relativeTo: __dirname,
     path: './templates',
     layout: true,
-    layoutPath: './templates/layout'
+    layoutPath: './templates/layout',
   });
 
   server.route({
@@ -47,9 +47,9 @@ const init = async () => {
     path: '/assets/{param*}',
     handler: {
       directory: {
-        path: 'assets'
-      }
-    }
+        path: 'assets',
+      },
+    },
   });
 
   server.route({
@@ -59,25 +59,25 @@ const init = async () => {
       let parsed = parseCurl(request.payload.curl);
       fetchData = {
         header: {
-          ...fetchData.header
-          // 'X-Auth-Token': parsed.header['X-Auth-Token']
-        }
+          ...fetchData.header,
+          // 'x-auth-token': parsed.header['x-auth-token']
+        },
       };
-      return { token: parsed.header['X-Auth-Token'] };
-    }
+      return { token: parsed.header['x-auth-token'] };
+    },
   });
 
   server.route({
     method: 'POST',
     path: '/execute',
     handler: async (req, h) => {
-      const data = await new Promise(resolve => {
+      const data = await new Promise((resolve) => {
         request(
           {
             headers: {
               ...fetchData.header,
-              'X-Auth-Token': req.payload.token,
-              'Accept-Encoding': 'gzip, deflate, br'
+              'x-auth-token': req.payload.token,
+              'Accept-Encoding': 'gzip, deflate, br',
             },
             uri:
               'https://api.gotinder.com/' +
@@ -87,7 +87,7 @@ const init = async () => {
               '?locale=pt-BR&s_number=' +
               req.payload.s_number,
             method: 'GET',
-            gzip: true
+            gzip: true,
           },
           (error, response, body) => {
             resolve({
@@ -101,18 +101,18 @@ const init = async () => {
                 req.payload.s_number,
               headers: {
                 ...fetchData.header,
-                'Accept-Encoding': 'gzip, deflate, br'
-              }
+                'Accept-Encoding': 'gzip, deflate, br',
+              },
             });
           }
         );
       });
       return data;
       // fetch().then(console.log, console.error);
-    }
+    },
   });
 
-  const fetchUsers = token => {
+  const fetchUsers = (token) => {
     let data = [];
     const max = 20;
     let iterator = 0;
@@ -126,20 +126,21 @@ const init = async () => {
       return iterator >= max;
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       for (let i = 0; i <= max; i++) {
         let a = request(
           {
             headers: {
               ...fetchData.header,
-              'X-Auth-Token': token,
-              'Accept-Encoding': 'gzip, deflate, br'
+              'x-auth-token': token,
+              'Accept-Encoding': 'gzip, deflate, br',
             },
             uri: 'https://api.gotinder.com/v2/recs/core?locale=pt-BR',
             method: 'GET',
-            gzip: true
+            gzip: true,
           },
           (error, response, body) => {
+            console.log(body);
             callback(error, response, body) && resolve(data);
           }
         );
@@ -152,10 +153,11 @@ const init = async () => {
     path: '/loadusers/{token}',
     handler: async (request, h) => {
       const data = await fetchUsers(request.params.token);
+      console.log(data);
       return data.filter((obj, pos, arr) => {
-        return arr.map(mapObj => mapObj.user._id).indexOf(obj.user._id) === pos;
+        return arr.map((mapObj) => mapObj.user._id).indexOf(obj.user._id) === pos;
       });
-    }
+    },
   });
 
   server.route({
@@ -163,14 +165,14 @@ const init = async () => {
     path: '/',
     handler: (request, h) => {
       return h.view('index');
-    }
+    },
   });
 
   await server.start();
   console.log(`Server running at: ${server.info.uri}`);
 };
 
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err) => {
   console.log(err);
   process.exit(1);
 });
